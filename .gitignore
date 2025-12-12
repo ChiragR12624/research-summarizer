@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+
+# Virtual env
+.venv/
+venv/
+
+# Byte-compiled / cache
+*.pyc
+*/__pycache__/
+
+# Data & uploads
+data/
+data/uploads/
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Streamlit config / secrets
+frontend/.streamlit/
+*.toml
+
+# OS
+.DS_Store
