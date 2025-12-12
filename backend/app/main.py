@@ -32,3 +32,21 @@ async def upload_paper(file: UploadFile = File(...)):
         "paper_id": paper_id,
         "filename": file.filename
     })
+
+
+
+
+from .pdf_extract import extract_text_from_pdf
+from fastapi import BackgroundTasks
+
+@app.post("/process_paper/{paper_id}")
+def process_paper(paper_id: str):
+    outdir = DATA_DIR / paper_id
+    # find first pdf file in outdir
+    pdfs = list(outdir.glob("*.pdf"))
+    if not pdfs:
+        return {"error": "no pdf found"}
+    pdf_path = str(pdfs[0])
+    res = extract_text_from_pdf(pdf_path)
+    (outdir / "raw.txt").write_text(res["text"])
+    return {"status": "processed", "chars": len(res["text"])}
