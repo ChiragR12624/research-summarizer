@@ -73,4 +73,30 @@ __pycache__/
 
 # Results (optional – comment out if you WANT to track them)
 backend/results/
+venv/
+venv311/
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Pytest cache
+.pytest_cache/
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Large ML caches
+.cache/
+.huggingface/
+
+# Results (optional – comment out if you WANT to track them)
+backend/results/
 

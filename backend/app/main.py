@@ -1,52 +1,71 @@
-from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse
-import uuid
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+from app.nlp import (
+    extract_keywords,
+    classify_topic,
+    novelty_score,
+    extract_citations,
+    gap_summary,
+    build_section_graph,
+    graph_to_dict
+)
+
+import json
+from datetime import datetime
 from pathlib import Path
 
-app = FastAPI(title="Research Summarizer Backend")
+# -------------------------
+# App initialization
+# -------------------------
+app = FastAPI()
 
-DATA_DIR = Path("data/uploads")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+# -------------------------
+# Input schema
+# -------------------------
+class PaperInput(BaseModel):
+    text: str
+    abstract: str
+    sections: list[str]
+    corpus_abstracts: list[str]
 
-@app.get("/")
-def root():
-    return {"status": "ok", "message": "Backend running successfully"}
+# -------------------------
+# Results storage setup
+# -------------------------
+RESULTS_DIR = Path("results")
+RESULTS_DIR.mkdir(exist_ok=True)
 
-@app.post("/upload_paper")
-async def upload_paper(file: UploadFile = File(...)):
-    # Create unique paper ID
-    paper_id = str(uuid.uuid4())[:8]
+def save_result(data: dict):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_path = RESULTS_DIR / f"analysis_{timestamp}.json"
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=2)
 
-    # Save directory
-    save_dir = DATA_DIR / paper_id
-    save_dir.mkdir(parents=True, exist_ok=True)
+# -------------------------
+# API endpoint
+# -------------------------
+@app.post("/analyze-paper")
+def analyze_paper(data: PaperInput):
+    keywords = extract_keywords(data.text)
+    topics = classify_topic(data.abstract)
+    citations = extract_citations(data.text)
+    novelty = novelty_score(data.abstract, data.corpus_abstracts)
+    gaps = gap_summary(data.text)
 
-    # Save PDF
-    pdf_path = save_dir / file.filename
-    contents = await file.read()
-    with open(pdf_path, "wb") as f:
-        f.write(contents)
+    graph = build_section_graph(data.sections)
+    graph_data = graph_to_dict(graph)
 
-    return JSONResponse({
-        "status": "uploaded",
-        "paper_id": paper_id,
-        "filename": file.filename
-    })
+    # ---- FINAL RESULT ----
+    result = {
+        "keywords": keywords,
+        "topics": topics,
+        "citations": citations,
+        "novelty_score": novelty,
+        "research_gaps": gaps,
+        "section_graph": graph_data
+    }
 
+    # ---- SAVE TO DISK ----
+    save_result(result)
 
-
-
-from .pdf_extract import extract_text_from_pdf
-from fastapi import BackgroundTasks
-
-@app.post("/process_paper/{paper_id}")
-def process_paper(paper_id: str):
-    outdir = DATA_DIR / paper_id
-    # find first pdf file in outdir
-    pdfs = list(outdir.glob("*.pdf"))
-    if not pdfs:
-        return {"error": "no pdf found"}
-    pdf_path = str(pdfs[0])
-    res = extract_text_from_pdf(pdf_path)
-    (outdir / "raw.txt").write_text(res["text"])
-    return {"status": "processed", "chars": len(res["text"])}
+    return result
