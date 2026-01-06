@@ -74,3 +74,28 @@ __pycache__/
 # Results (optional – comment out if you WANT to track them)
 backend/results/
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+.venv/
+
+# OS
+.DS_Store
+
+# SQLite
+data/cache.db
+
+# Uploaded PDFs & generated reports
+data/uploads/
+data/reports/
+
+# Results
+results/
+
+# IDE
+.vscode/
+.idea/

@@ -1,6 +1,7 @@
 # backend/app/nlp/topic_classifier.py
 
 from transformers import AutoTokenizer, AutoModel
+from functools import lru_cache
 import torch
 
 _MODEL_NAME = "allenai/scibert_scivocab_uncased"
@@ -25,6 +26,7 @@ def classify_topic(text: str):
     ]
     return matched if matched else ["Other"]
 
+@lru_cache(maxsize=128)
 def get_scibert_embedding(text: str):
     inputs = tokenizer(
         text,
