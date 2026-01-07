@@ -1,27 +1,27 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import analyze, upload, query, summary
+from app.api import upload, summary, query, analyze, download
 
-app = FastAPI(
-    title="LLM-based Research Paper Summarizer",
-    description="Backend API for analyzing and querying research papers",
-    version="0.1.0"
+app = FastAPI(title="LLM Research Paper Summarizer")
+
+# ---------------- CORS ----------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# -------------------------
-# Register routers FIRST
-# -------------------------
-app.include_router(analyze.router)
-app.include_router(upload.router)
-app.include_router(query.router)
-app.include_router(summary.router)
+# ---------------- ROUTERS ----------------
+app.include_router(upload.router, tags=["Upload"])
+app.include_router(summary.router, tags=["Summary"])
+app.include_router(query.router, tags=["RAG Query"])
+app.include_router(analyze.router, tags=["Analysis"])
+app.include_router(download.router, tags=["Download"])
 
-# -------------------------
-# Root endpoint LAST
-# -------------------------
+# ---------------- HEALTH ----------------
 @app.get("/")
-def root():
-    return {
-        "status": "running",
-        "message": "Research Summarizer Backend is up"
-    }
+def health():
+    return {"status": "backend running"}
