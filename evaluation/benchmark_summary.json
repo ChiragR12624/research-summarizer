@@ -1,0 +1,16 @@
+{
+  "Flan-T5": {
+    "rouge1": null,
+    "rouge2": null,
+    "rougeL": null,
+    "bleu": null,
+    "note": "No valid papers evaluated"
+  },
+  "LLaMA": {
+    "rouge1": null,
+    "rouge2": null,
+    "rougeL": null,
+    "bleu": null,
+    "note": "No valid papers evaluated"
+  }
+}
